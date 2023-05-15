@@ -5,7 +5,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import App from './App';
 
-import './styles/index.scss';
+import './styles/index.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
