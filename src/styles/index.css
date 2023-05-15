@@ -1,0 +1,27 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  min-height: 100vh;
+}
+
+#root {
+  height: 100%;
+}
+
+@layer components {
+  .btn-base {
+    @apply flex justify-center items-center w-full max-w-sm h-10 border border-black rounded-full text-base font-medium cursor-pointer hover:scale-105 transition-all disabled:opacity-50;
+  }
+}

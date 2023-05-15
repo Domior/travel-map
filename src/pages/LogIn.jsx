@@ -1,20 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin, googleLogout } from '@react-oauth/google';
 
-import { getGoogleProfileInfo } from '../../services/GoogleService';
-import { SessionStorageService } from '../../services/SessionStorage';
-import { ACCESS_TOKEN_KEY } from '../../constants/storage';
-
-import styles from './index.module.scss';
+import { getGoogleProfileInfo } from '../services/GoogleService';
+import { SessionStorageService } from '../services/SessionStorage';
+import { ACCESS_TOKEN_KEY } from '../constants/storage';
 
 const LogIn = () => {
   const [token, setToken] = useState();
   const [profile, setProfile] = useState();
 
+  const navigate = useNavigate();
+
   const login = useGoogleLogin({
     onSuccess: codeResponse => {
       setToken(codeResponse.access_token);
       SessionStorageService.setItem(ACCESS_TOKEN_KEY, codeResponse.access_token);
+      navigate('/stripe');
     },
     onError: error => console.log('Login Failed:', error),
   });
@@ -37,7 +39,7 @@ const LogIn = () => {
   };
 
   return (
-    <div className={styles.container}>
+    <div className="flex justify-center items-center flex-col h-full">
       {profile ? (
         <div>
           <img src={profile.picture} alt="user_image" />
@@ -46,7 +48,7 @@ const LogIn = () => {
           <button onClick={logOut}>Log out</button>
         </div>
       ) : (
-        <button className={styles.loginButton} onClick={() => login()}>
+        <button className="btn-base" onClick={() => login()}>
           Sign in with Google
         </button>
       )}
