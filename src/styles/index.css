@@ -22,6 +22,6 @@ body {
 
 @layer components {
   .btn-base {
-    @apply flex justify-center items-center w-full max-w-sm h-10 border border-black rounded-full text-base font-medium cursor-pointer hover:scale-105 transition-all disabled:opacity-50;
+    @apply flex justify-center items-center w-full max-w-sm h-10 bg-blue-600 border border-white rounded-full text-white text-base font-medium cursor-pointer hover:scale-105 transition-all disabled:bg-slate-600;
   }
 }
