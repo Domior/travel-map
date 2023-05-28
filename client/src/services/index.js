@@ -11,3 +11,10 @@ export const googleInstance = axios.create({
     Accept: 'application/json',
   },
 });
+
+export const stripeInstance = axios.create({
+  baseURL: 'http://localhost:5000',
+  headers: {
+    Accept: 'application/json',
+  },
+});

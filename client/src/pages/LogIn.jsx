@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin, googleLogout } from '@react-oauth/google';
 
-import { getGoogleProfileInfo } from '../services/GoogleService';
+import { GoogleService } from '../services/GoogleService';
 import { SessionStorageService } from '../services/SessionStorage';
 import { ACCESS_TOKEN_KEY } from '../constants/storage';
 
@@ -22,7 +22,7 @@ const LogIn = () => {
   });
 
   const fetchGoogleProfileData = useCallback(async () => {
-    const { data } = await getGoogleProfileInfo(token);
+    const { data } = await GoogleService.getProfileInfo(token);
 
     setProfile(data);
   }, [token]);
