@@ -154,7 +154,7 @@ const MapContainer = () => {
   return (
     <div className="h-full w-full">
       <GoogleMap
-        mapContainerStyle="h-full w-full"
+        mapContainerClassName="h-full w-full"
         zoom={MAP_ZOOM}
         center={position}
         onClick={onMapClick}

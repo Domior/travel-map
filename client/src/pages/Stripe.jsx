@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import { loadStripe } from '@stripe/stripe-js';
 import {
   Elements,
@@ -8,6 +7,8 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
+
+import { StripeService } from '../services/StripeService';
 
 const stripe = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 
@@ -39,14 +40,37 @@ function CheckoutForm() {
       card: elements.getElement(CardElement),
     });
 
-    if (error) {
-      setError(error.message);
-      console.log('[error]', error);
+    if (!error) {
+      try {
+        const { id: paymentMethodId } = paymentMethod;
+        const response = await StripeService.pay({
+          amount: 1000,
+          paymentMethodId,
+        });
+
+        setError(null);
+        console.log('[PaymentMethod]', paymentMethod);
+        console.log('[Response]', response);
+
+        const result = await stripe.confirmCardPayment(
+          response.data.clientSecret,
+          cardElement,
+        );
+
+        if (result.error) {
+          alert('payment error');
+        } else {
+          alert('payment success');
+          console.log('result', result);
+        }
+
+        navigate('/map');
+      } catch (error) {
+        setError(error.message);
+        console.log('[Error]', error);
+      }
     } else {
-      setError(null);
-      console.log('[PaymentMethod]', paymentMethod);
-      navigate('/map');
-      // Send paymentMethod.id to your server to save the card details
+      console.log(error.message);
     }
   };
 
