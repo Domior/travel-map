@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-const PORT = 5000;
+const PORT = 4000;
 
 app.use(cors());
 
