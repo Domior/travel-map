@@ -7,6 +7,7 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
+import { toast } from 'react-toastify';
 
 import { StripeService } from '../services/StripeService';
 
@@ -29,11 +30,7 @@ function CheckoutForm() {
   const handleSubmit = async event => {
     event.preventDefault();
 
-    if (!stripe || !elements) {
-      // Stripe has not yet loaded.
-      // Make sure to disable form submission until Stripe has loaded.
-      return;
-    }
+    if (!stripe || !elements) return;
 
     const { error, paymentMethod } = await stripe.createPaymentMethod({
       type: 'card',
@@ -70,7 +67,7 @@ function CheckoutForm() {
         console.log('[Error]', error);
       }
     } else {
-      console.log(error.message);
+      toast.error(error.message);
     }
   };
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 
 import LogIn from './pages/LogIn';
 import Stripe from './pages/Stripe';
@@ -14,6 +15,7 @@ const App = () => {
         <Route path="stripe" element={<Stripe />} />
         <Route path="map" element={<Map />} />
       </Routes>
+      <ToastContainer position="top-center" autoClose={3000} theme="colored" />
     </>
   );
 };
