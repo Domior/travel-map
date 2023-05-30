@@ -3,8 +3,8 @@ export const inputOptions = {
     base: {
       fontSize: '16px',
       lineHeight: '24px',
-      color: '#fff',
+      color: '#000',
     },
-    invalid: { color: '#fff' },
+    invalid: { color: 'red' },
   },
 };

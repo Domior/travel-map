@@ -4,10 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin, googleLogout } from '@react-oauth/google';
 import { toast } from 'react-toastify';
 
-import { fetchProfile, setProfile, setStatus } from '../redux/slices/googleSlice';
+import { fetchProfile, reset } from '../redux/slices/googleSlice';
 import { SessionStorageService } from '../services/SessionStorage';
 import { ACCESS_TOKEN_KEY } from '../constants/storage';
-import { STATUSES } from '../constants/login';
+import { STATUSES } from '../constants/redux';
 
 const LogIn = () => {
   const dispatch = useDispatch();
@@ -39,8 +39,7 @@ const LogIn = () => {
 
   const logOut = () => {
     googleLogout();
-    dispatch(setProfile(null));
-    dispatch(setStatus(null));
+    dispatch(reset());
 
     toast.success('You successfully logged out');
   };

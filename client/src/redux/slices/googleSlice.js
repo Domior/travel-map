@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 import { GoogleService } from '../../services/GoogleService';
-import { STATUSES } from '../../constants/login';
+import { STATUSES } from '../../constants/redux';
 
 export const fetchProfile = createAsyncThunk('google/fetchProfile', async token => {
   const { data } = await GoogleService.getProfileInfo(token);
@@ -23,6 +23,10 @@ export const googleSlice = createSlice({
     setStatus(state, { payload }) {
       state.status = payload;
     },
+    reset(state) {
+      state.profile = null;
+      state.status = null;
+    },
   },
   extraReducers: {
     [fetchProfile.pending]: state => {
@@ -40,6 +44,6 @@ export const googleSlice = createSlice({
   },
 });
 
-export const { setProfile, setStatus } = googleSlice.actions;
+export const { setProfile, setStatus, reset } = googleSlice.actions;
 
 export default googleSlice.reducer;

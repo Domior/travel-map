@@ -1,30 +1,26 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { loadStripe } from '@stripe/stripe-js';
-import {
-  Elements,
-  CardElement,
-  useStripe,
-  useElements,
-} from '@stripe/react-stripe-js';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, Navigate } from 'react-router-dom';
+import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { toast } from 'react-toastify';
 
-import { StripeService } from '../services/StripeService';
+import { setPaymentMethod } from '../redux/slices/stripeSlice';
+import { inputOptions } from '../constants/stripe';
+import { STATUSES } from '../constants/redux';
 
-const stripe = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
-
-function CheckoutForm() {
+const Stripe = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const stripe = useStripe();
   const elements = useElements();
 
-  const [cardElement, setCardElement] = useState(null);
-  const [error, setError] = useState(null);
+  const { status } = useSelector(state => state.google);
+
+  const [inputError, setInputError] = useState(null);
 
   const handleCardElementChange = event => {
-    setCardElement(event.complete ? event.element : null);
-    setError(event.error ? event.error.message : null);
+    setInputError(event.error ? event.error.message : null);
   };
 
   const handleSubmit = async event => {
@@ -38,38 +34,18 @@ function CheckoutForm() {
     });
 
     if (!error) {
-      try {
-        const { id: paymentMethodId } = paymentMethod;
-        const response = await StripeService.pay({
-          amount: 1000,
-          paymentMethodId,
-        });
+      dispatch(setPaymentMethod(paymentMethod));
 
-        setError(null);
-        console.log('[PaymentMethod]', paymentMethod);
-        console.log('[Response]', response);
-
-        const result = await stripe.confirmCardPayment(
-          response.data.clientSecret,
-          cardElement,
-        );
-
-        if (result.error) {
-          alert('payment error');
-        } else {
-          alert('payment success');
-          console.log('result', result);
-        }
-
-        navigate('/map');
-      } catch (error) {
-        setError(error.message);
-        console.log('[Error]', error);
-      }
+      navigate('/map');
+      toast.success('Card successfully saved');
     } else {
       toast.error(error.message);
     }
   };
+
+  if (status !== STATUSES.SUCCESS) {
+    <Navigate to="/login" />;
+  }
 
   return (
     <div className="flex justify-center items-center h-full">
@@ -78,12 +54,9 @@ function CheckoutForm() {
           Enter your credit or debit card details for future payments
         </label>
         <div id="card-element" className="mt-2 max-h-96">
-          <CardElement
-            options={{ style: { base: { fontSize: '16px' } } }}
-            onChange={handleCardElementChange}
-          />
+          <CardElement options={inputOptions} onChange={handleCardElementChange} />
         </div>
-        {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+        {inputError && <p className="mt-1 text-xs text-red-600">{inputError}</p>}
         <button
           type="submit"
           disabled={!stripe}
@@ -93,14 +66,6 @@ function CheckoutForm() {
         </button>
       </form>
     </div>
-  );
-}
-
-const Stripe = () => {
-  return (
-    <Elements stripe={stripe}>
-      <CheckoutForm />
-    </Elements>
   );
 };
 
