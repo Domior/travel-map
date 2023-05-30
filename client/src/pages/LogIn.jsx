@@ -29,20 +29,22 @@ const LogIn = () => {
     },
   });
 
-  useEffect(() => {
-    if (!token) return;
-
-    dispatch(fetchProfile(token));
-
-    if (status === STATUSES.SUCCESS) navigate('/stripe');
-  }, [dispatch, token, status, navigate]);
-
   const logOut = () => {
     googleLogout();
     dispatch(reset());
 
     toast.success('You successfully logged out');
   };
+
+  useEffect(() => {
+    if (!token) return;
+
+    dispatch(fetchProfile(token));
+  }, [dispatch, token]);
+
+  useEffect(() => {
+    if (status === STATUSES.SUCCESS) navigate('/stripe');
+  }, [status, navigate]);
 
   return (
     <div className="flex justify-center items-center flex-col h-full">
