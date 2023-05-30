@@ -24,7 +24,11 @@ export const mapSlice = createSlice({
       state.searchValue = payload;
     },
     setMarkers(state, { payload }) {
-      state.markers = [...state.markers, { id: uuid(), position: { ...payload } }];
+      const { _position, _address } = payload;
+      state.markers = [
+        ...state.markers,
+        { id: uuid(), position: { ..._position }, address: _address },
+      ];
     },
     handleMarkerDblClick(state, { payload }) {
       state.markers = [...state.markers.filter(marker => marker.id !== payload)];

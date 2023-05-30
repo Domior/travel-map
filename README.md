@@ -18,4 +18,4 @@ Before using the application, make sure that you are running the server.\
 When you launch the app, you will be redirected to a login page, where you will need to log in with **Google**.\
 After successful authentication you will get to the page where you need to fill in your card information for payments on **Stripe**.\
 The next step is to choose 3 places. The first is the departure place, the second is the halfway point, and the third is the landing place.\
-**The cost of the flight will be calculated as 1km = 1$.**
+**The cost of the flight will be calculated as 1km = $1(min $50).**
