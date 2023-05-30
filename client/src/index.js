@@ -21,6 +21,5 @@ root.render(
         <App />
       </GoogleOAuthProvider>
     </BrowserRouter>
-    ,
   </Provider>,
 );

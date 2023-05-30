@@ -26,6 +26,7 @@ import {
 } from '../constants/google_map';
 import { MapService } from '../services/MapService';
 import { STATUSES } from '../constants/redux';
+import { MIN_PRICE } from '../constants/stripe';
 import {
   setPosition,
   setAddress,
@@ -34,6 +35,7 @@ import {
   handleMarkerDblClick,
   clear,
 } from '../redux/slices/mapSlice';
+import { calculateDistance } from '../helpers/map';
 
 import { ReactComponent as ClearIcon } from '../assets/icons/close-dark.svg';
 
@@ -64,6 +66,8 @@ const MapContainer = () => {
   const [markerPosition, setMarkerPosition] = useState(waypoints[0]);
   const [animationStarted, setAnimationStarted] = useState(false);
 
+  const [totalDistance, setTotalDistance] = useState();
+
   const onPlaceChanged = () => {
     if (autoComplete === null) return;
     if (markers.length === MAP_MARKERS_LIMIT) {
@@ -80,7 +84,7 @@ const MapContainer = () => {
       const _position = await MapService.getCoordinatesFromAddress(_address);
 
       dispatch(setPosition(_position));
-      dispatch(setMarkers(_position));
+      dispatch(setMarkers({ _position, _address }));
     })();
   };
 
@@ -96,19 +100,33 @@ const MapContainer = () => {
     };
 
     dispatch(setPosition(_position));
-    dispatch(setMarkers(_position));
 
     (async () => {
       const _address = await MapService.getAddressFromCoordinates(_position);
 
       dispatch(setAddress(_address));
       dispatch(setSearchValue(_address));
+      dispatch(setMarkers({ _position, _address }));
     })();
   };
 
   const startAnimation = () => {
     setAnimationStarted(true);
   };
+
+  useEffect(() => {
+    if (waypoints.length > 2) {
+      const totalDistance = waypoints
+        .slice(0, -1)
+        .reduce((accumulator, waypoint, index) => {
+          const { lat: lat1, lng: lon1 } = waypoint;
+          const { lat: lat2, lng: lon2 } = waypoints[index + 1];
+          const distance = calculateDistance(lat1, lon1, lat2, lon2);
+          return accumulator + distance;
+        }, 0);
+      setTotalDistance(Math.ceil(totalDistance));
+    }
+  }, [waypoints]);
 
   useEffect(() => {
     if (markers.length < MAP_MARKERS_LIMIT) return;
@@ -219,7 +237,10 @@ const MapContainer = () => {
               icon={PLANE_ICON_MODEL}
             />
           )}
-        <PaymentDetails />
+        <PaymentDetails
+          amount={totalDistance > MIN_PRICE ? totalDistance : MIN_PRICE}
+          markersCount={markers.length}
+        />
         <ConstructRoute markersCount={markers.length} onClick={startAnimation} />
       </GoogleMap>
     </div>

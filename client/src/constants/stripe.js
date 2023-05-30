@@ -8,3 +8,5 @@ export const inputOptions = {
     invalid: { color: 'red' },
   },
 };
+
+export const MIN_PRICE = 50;

@@ -17,9 +17,9 @@ export const MARKERS_LIMIT_ALERT = `You reached the limit of ${MAP_MARKERS_LIMIT
 export const ANIMATION_DURATION = 5000; // Animation duration in milliseconds
 
 export const POLYLINE_STYLES = {
-  strokeColor: '#00FF00',
+  strokeColor: '#b103fc',
   strokeOpacity: 0.8,
-  strokeWeight: 5,
+  strokeWeight: 4,
 };
 
 export const PLANE_ICON_MODEL = {
