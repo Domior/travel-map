@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   GoogleMap,
   Marker,
@@ -7,15 +9,14 @@ import {
   useLoadScript,
 } from '@react-google-maps/api';
 import Geocode from 'react-geocode';
-import { v4 as uuid } from 'uuid';
 
 import MarkersInfo from '../components/Dialogs/MarkersInfo';
+import PaymentDetails from '../components/Dialogs/PaymentDetails';
 import ConstructRoute from '../components/Buttons/ConstructRoute';
 
 import {
   MAP_API_KEY,
   MAP_ZOOM,
-  MAP_INITIAL_POSITION,
   MAP_MARKERS_LIMIT,
   MARKERS_LIMIT_ALERT,
   ANIMATION_DURATION,
@@ -24,6 +25,15 @@ import {
   MARKER_ICON_MODEL,
 } from '../constants/google_map';
 import { MapService } from '../services/MapService';
+import { STATUSES } from '../constants/redux';
+import {
+  setPosition,
+  setAddress,
+  setSearchValue,
+  setMarkers,
+  handleMarkerDblClick,
+  clear,
+} from '../redux/slices/mapSlice';
 
 import { ReactComponent as ClearIcon } from '../assets/icons/close-dark.svg';
 
@@ -32,21 +42,23 @@ Geocode.setApiKey(MAP_API_KEY);
 const libraries = ['places'];
 
 const MapContainer = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: MAP_API_KEY,
     libraries,
   });
 
-  const [position, setPosition] = useState(MAP_INITIAL_POSITION);
-  const [address, setAddress] = useState('');
-  const [autoComplete, setAutoComplete] = useState(null);
-  const [inputValue, setInputValue] = useState(address);
+  const { status } = useSelector(state => state.google);
+  const { position, markers, searchValue } = useSelector(state => state.map);
 
-  const [markers, setMarkers] = useState([]);
   const waypoints = useMemo(
     () => [...markers.map(marker => marker.position)],
     [markers],
   );
+
+  const [autoComplete, setAutoComplete] = useState(null);
 
   const [currentWaypointIndex, setCurrentWaypointIndex] = useState(0);
   const [markerPosition, setMarkerPosition] = useState(waypoints[0]);
@@ -60,15 +72,15 @@ const MapContainer = () => {
     }
     const _address = autoComplete.getPlace().formatted_address;
 
-    void (async () => {
+    (async () => {
       if (_address === undefined) return;
-      setAddress(_address);
-      setInputValue(_address);
+      dispatch(setAddress(_address));
+      dispatch(setSearchValue(_address));
 
       const _position = await MapService.getCoordinatesFromAddress(_address);
 
-      setPosition(_position);
-      setMarkers(prev => [...prev, { id: uuid(), position: { ..._position } }]);
+      dispatch(setPosition(_position));
+      dispatch(setMarkers(_position));
     })();
   };
 
@@ -82,19 +94,16 @@ const MapContainer = () => {
       lat: e.latLng.lat(),
       lng: e.latLng.lng(),
     };
-    setPosition(_position);
-    setMarkers(prev => [...prev, { id: uuid(), position: { ..._position } }]);
 
-    void (async () => {
+    dispatch(setPosition(_position));
+    dispatch(setMarkers(_position));
+
+    (async () => {
       const _address = await MapService.getAddressFromCoordinates(_position);
 
-      setAddress(_address);
-      setInputValue(_address);
+      dispatch(setAddress(_address));
+      dispatch(setSearchValue(_address));
     })();
-  };
-
-  const handleMarkerDblClick = id => {
-    setMarkers([...markers.filter(marker => marker.id !== id)]);
   };
 
   const startAnimation = () => {
@@ -113,18 +122,16 @@ const MapContainer = () => {
         animationStartTime = timestamp;
       }
 
-      const duration = ANIMATION_DURATION;
-
       const progress = timestamp - animationStartTime;
       const index = currentWaypointIndex;
       const currentWaypoint = waypoints[index];
 
-      if (progress < duration && index < waypoints.length - 1) {
+      if (progress < ANIMATION_DURATION && index < waypoints.length - 1) {
         const nextWaypoint = waypoints[index + 1];
 
         const deltaX = nextWaypoint.lng - currentWaypoint.lng;
         const deltaY = nextWaypoint.lat - currentWaypoint.lat;
-        const factor = progress / duration;
+        const factor = progress / ANIMATION_DURATION;
 
         setMarkerPosition({
           lat: currentWaypoint.lat + deltaY * factor,
@@ -149,6 +156,12 @@ const MapContainer = () => {
     };
   }, [currentWaypointIndex, waypoints, markers.length, animationStarted]);
 
+  useEffect(() => {
+    if (status !== STATUSES.SUCCESS) {
+      navigate('/login');
+    }
+  }, [status, navigate]);
+
   if (!isLoaded) return <p>Loading...</p>;
 
   return (
@@ -170,19 +183,16 @@ const MapContainer = () => {
             <input
               type="text"
               placeholder="Enter address"
-              value={inputValue}
+              value={searchValue}
               onChange={e => {
-                setInputValue(e.target.value);
+                dispatch(setSearchValue(e.target.value));
               }}
               className="w-[400px] h-9 pr-8 pl-3 border border-transparent rounded truncate"
             />
 
             <ClearIcon
               className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
-              onClick={() => {
-                setAddress('');
-                setInputValue('');
-              }}
+              onClick={() => dispatch(clear())}
             />
           </div>
         </Autocomplete>
@@ -192,7 +202,7 @@ const MapContainer = () => {
             key={id}
             icon={MARKER_ICON_MODEL}
             position={position}
-            onDblClick={() => handleMarkerDblClick(id)}
+            onDblClick={() => dispatch(handleMarkerDblClick(id))}
           />
         ))}
 
@@ -209,7 +219,7 @@ const MapContainer = () => {
               icon={PLANE_ICON_MODEL}
             />
           )}
-
+        <PaymentDetails />
         <ConstructRoute markersCount={markers.length} onClick={startAnimation} />
       </GoogleMap>
     </div>
