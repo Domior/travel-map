@@ -20,7 +20,6 @@ app.post('/pay', async (req, res) => {
       amount,
       currency: 'usd',
       payment_method: paymentMethodId,
-      confirm: true,
     });
 
     res.status(200).json({ clientSecret: paymentIntent.client_secret });

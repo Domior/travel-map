@@ -33,9 +33,14 @@ export const mapSlice = createSlice({
     handleMarkerDblClick(state, { payload }) {
       state.markers = [...state.markers.filter(marker => marker.id !== payload)];
     },
-    clear(state) {
+    clearAutocomplete(state) {
       state.address = '';
       state.searchValue = '';
+    },
+    resetMap(state) {
+      state.address = '';
+      state.searchValue = '';
+      state.markers = [];
     },
   },
 });
@@ -46,7 +51,8 @@ export const {
   setSearchValue,
   setMarkers,
   handleMarkerDblClick,
-  clear,
+  clearAutocomplete,
+  resetMap,
 } = mapSlice.actions;
 
 export default mapSlice.reducer;

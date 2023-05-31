@@ -23,7 +23,7 @@ export const googleSlice = createSlice({
     setStatus(state, { payload }) {
       state.status = payload;
     },
-    reset(state) {
+    resetGoogle(state) {
       state.profile = null;
       state.status = null;
     },
@@ -44,6 +44,6 @@ export const googleSlice = createSlice({
   },
 });
 
-export const { setProfile, setStatus, reset } = googleSlice.actions;
+export const { setProfile, setStatus, resetGoogle } = googleSlice.actions;
 
 export default googleSlice.reducer;

@@ -33,8 +33,10 @@ import {
   setSearchValue,
   setMarkers,
   handleMarkerDblClick,
-  clear,
+  clearAutocomplete,
+  resetMap,
 } from '../redux/slices/mapSlice';
+import { resetStripe } from '../redux/slices/stripeSlice';
 import { calculateDistance } from '../helpers/map';
 
 import { ReactComponent as ClearIcon } from '../assets/icons/close-dark.svg';
@@ -53,6 +55,7 @@ const MapContainer = () => {
   });
 
   const { status } = useSelector(state => state.google);
+  const { paymentMethod } = useSelector(state => state.stripe);
   const { position, markers, searchValue } = useSelector(state => state.map);
 
   const waypoints = useMemo(
@@ -64,6 +67,7 @@ const MapContainer = () => {
 
   const [currentWaypointIndex, setCurrentWaypointIndex] = useState(0);
   const [markerPosition, setMarkerPosition] = useState(waypoints[0]);
+  const [isRouteConstructed, setIsRouteConstructed] = useState(false);
   const [animationStarted, setAnimationStarted] = useState(false);
 
   const [totalDistance, setTotalDistance] = useState();
@@ -110,9 +114,9 @@ const MapContainer = () => {
     })();
   };
 
-  const startAnimation = () => {
-    setAnimationStarted(true);
-  };
+  const startAnimation = () => setAnimationStarted(true);
+
+  const constructRoute = () => setIsRouteConstructed(true);
 
   useEffect(() => {
     if (waypoints.length > 2) {
@@ -175,6 +179,22 @@ const MapContainer = () => {
   }, [currentWaypointIndex, waypoints, markers.length, animationStarted]);
 
   useEffect(() => {
+    if (waypoints.length !== 1 && currentWaypointIndex === waypoints.length - 1) {
+      alert('Your flight successfully completed. Let`s go to have a new one?');
+      setAnimationStarted(false);
+      setIsRouteConstructed(false);
+      dispatch(resetMap());
+      dispatch(resetStripe());
+    }
+  }, [dispatch, navigate, currentWaypointIndex, waypoints.length]);
+
+  useEffect(() => {
+    if (paymentMethod === null) {
+      navigate('/stripe');
+    }
+  }, [paymentMethod, navigate]);
+
+  useEffect(() => {
     if (status !== STATUSES.SUCCESS) {
       navigate('/login');
     }
@@ -210,7 +230,7 @@ const MapContainer = () => {
 
             <ClearIcon
               className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
-              onClick={() => dispatch(clear())}
+              onClick={() => dispatch(clearAutocomplete())}
             />
           </div>
         </Autocomplete>
@@ -220,11 +240,14 @@ const MapContainer = () => {
             key={id}
             icon={MARKER_ICON_MODEL}
             position={position}
-            onDblClick={() => dispatch(handleMarkerDblClick(id))}
+            onDblClick={() => {
+              dispatch(handleMarkerDblClick(id));
+              setIsRouteConstructed(false);
+            }}
           />
         ))}
 
-        {waypoints.length >= MAP_MARKERS_LIMIT && (
+        {isRouteConstructed && (
           <Polyline path={waypoints} options={POLYLINE_STYLES} />
         )}
 
@@ -240,8 +263,13 @@ const MapContainer = () => {
         <PaymentDetails
           amount={totalDistance > MIN_PRICE ? totalDistance : MIN_PRICE}
           markersCount={markers.length}
+          isRouteConstructed={isRouteConstructed}
+          onStartAnimation={startAnimation}
         />
-        <ConstructRoute markersCount={markers.length} onClick={startAnimation} />
+        <ConstructRoute
+          onClick={constructRoute}
+          disabled={animationStarted || markers.length !== MAP_MARKERS_LIMIT}
+        />
       </GoogleMap>
     </div>
   );
